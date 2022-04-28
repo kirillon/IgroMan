@@ -4,7 +4,9 @@ from aiogram import Bot, Dispatcher, executor, types
 from aiogram.bot import api
 
 from Telegram_final import TOKEN, PATCHED_URL
-
+from aiogram.dispatcher import FSMContext
+from aiogram.dispatcher.filters.state import StatesGroup, State
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
 import requests
 
 import re
@@ -18,7 +20,12 @@ setattr(api, "API_URL", PATCHED_URL)
 
 
 bot = Bot(token=TOKEN)
-dp = Dispatcher(bot=bot)
+storage = MemoryStorage()
+dp = Dispatcher(bot=bot, storage=storage)
+
+
+class Games(StatesGroup):
+    title = State()
 
 
 @dp.message_handler(commands=['start'])
@@ -85,7 +92,29 @@ async def guess(message: types.Message):
 
 @dp.message_handler(commands=['game'])
 async def game(message: types.Message):
-    await message.reply(text='''game''', reply=False)
+    await message.reply(text="Введите название игры")
+    await Games.title.set()
+
+
+@dp.message_handler(state=Games.title)
+async def search(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        data['name'] = message.text
+    response = requests.get(f'https://igroman.herokuapp.com/api/v1/searchGames/?search={message.text}', timeout=5)
+    json_response = response.json()
+
+    top = list()
+    top1 = list()
+    for i in range(len(json_response['data'])):
+        top.append([json_response['data'][i]['title'],
+                    str(int(json_response['data'][i]["price"]) / 100)
+                    + "$", f" /id{json_response['data'][i]['steam_id']}"])
+
+        top1.append(",".join(top[i]))
+        top1[i] = f"{i + 1}. " + top1[i]
+
+    await message.reply(f"Найдено {len(json_response['data'])} результатов запроса\n" + "\n".join(top1))
+    await state.finish()
 
 
 @dp.message_handler(content_types=types.ContentType.ANY)
@@ -104,10 +133,14 @@ async def massage(message: types.Message):
                 print(description)
                 description = re.sub(r'<[^>]*>', '', description)
                 print(description)
-                await bot.send_photo(chat_id=message.chat.id, photo=f'{poster}')
+                try:
+                    await bot.send_photo(chat_id=message.chat.id, photo=f'{poster}')
+                except:
+                    pass
+
                 await message.answer(f'''Название: {title}
 Жанр: {genre}
-Цена: {price}
+Цена: {float(price) / 100} $
 Ссылка: {url}
 Описание: {description}''', parse_mode=types.ParseMode.HTML)
     else:
@@ -120,3 +153,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
