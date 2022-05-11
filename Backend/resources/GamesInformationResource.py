@@ -3,6 +3,7 @@ from flask_restful import Resource
 from serializers import GamesSchema
 
 
+# получение информации обо всех играх
 class GamesInformationResource(Resource):
 
     def get(self):
