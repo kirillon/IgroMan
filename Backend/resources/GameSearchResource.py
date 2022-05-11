@@ -4,6 +4,7 @@ from serializers import GamesSchema
 from flask import request
 
 
+# ресурс поиска игры
 class GameSearchResource(Resource):
 
     def get(self):
