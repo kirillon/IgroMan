@@ -8,6 +8,7 @@ from serializers import GamesSchema
 import requests
 
 
+# список лучших игр за все время
 class GamesTopForeverInformationResource(Resource):
 
     def get(self):
@@ -16,7 +17,6 @@ class GamesTopForeverInformationResource(Resource):
         limit = request.args.get('limit', default=10, type=int)
         top_forever_request = random.sample(top_forever_request, limit)
 
-        # top_game_information = Game.query.filter(Game.steam_id.in_(top_forever_request)).all()
         games_shema = GamesSchema()
         for app_id in top_forever_request:
             try:
