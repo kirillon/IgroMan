@@ -1,7 +1,7 @@
 import os
 import re
 import urllib.request
-import uuid
+
 from datetime import datetime
 
 import requests
@@ -30,23 +30,23 @@ class Game(BaseStateGroup):
     END = 1  # END я добавляю чтобы стейт останавливался.
 
 
-def upload_keyboard(keyboard):
+def upload_keyboard(keyboard):  # загрузка клавиатуры
     button_1 = "/help"
-    keyboard.add(Text(button_1), color= KeyboardButtonColor.POSITIVE)
+    keyboard.add(Text(button_1), color=KeyboardButtonColor.POSITIVE)
     button_2 = "/top_2w"
-    keyboard.add(Text(button_2), color= KeyboardButtonColor.PRIMARY)
+    keyboard.add(Text(button_2), color=KeyboardButtonColor.PRIMARY)
 
     button_3 = "/top_f"
     keyboard.add(Text(button_3))
     button_4 = "/guess"
     keyboard.row()
-    keyboard.add(Text(button_4), color= KeyboardButtonColor.NEGATIVE)
+    keyboard.add(Text(button_4), color=KeyboardButtonColor.NEGATIVE)
     button_5 = "/game"
-    keyboard.add(Text(button_5), color= KeyboardButtonColor.PRIMARY)
+    keyboard.add(Text(button_5), color=KeyboardButtonColor.PRIMARY)
 
 
 @bot.on.message(text='/help')
-async def help(message: Message):
+async def help(message: Message):  # help хендлер
     await message.reply('''Что я умею:
     /top_2w - перечислю лучшие игры за последние две недели
     /top_f - перечислю топ игр за всё время
@@ -54,7 +54,7 @@ async def help(message: Message):
     /game - опишу игру''')
 
 
-@bot.on.message(text="Начать")
+@bot.on.message(text="Начать")  # Start хендлер
 async def start(message: Message):
     user = await bot.api.users.get(message.from_id)
     await message.reply(f'Привет, {user[0].first_name}! Меня зовут - Игроман. Я могу тебе подсказать во что тебе '
@@ -66,7 +66,7 @@ async def start(message: Message):
     await message.answer("Что ты хочешь спросить?", keyboard=keyboard)
 
 
-@bot.on.message(text=['/top_2w'])
+@bot.on.message(text=['/top_2w'])  # топ за 2 недели хендлер
 async def top_2w(message: Message):
     response = requests.get('https://igroman.herokuapp.com/api/v1/top2weeks')
     json_response = response.json()
@@ -87,7 +87,7 @@ async def top_2w(message: Message):
     await message.reply("\n".join(top1), keyboard=keyboard)
 
 
-@bot.on.message(CommandRule("id", ["/"], 1))
+@bot.on.message(CommandRule("id", ["/"], 1))  # поиск игры хендлер
 async def search_game(message: Message, args: Tuple[int]):
     res = requests.get(f"https://igroman.herokuapp.com/api/v1/getGames/{args[0]}").json()
     if res["success"]:
@@ -117,7 +117,7 @@ async def search_game(message: Message, args: Tuple[int]):
     Описание: {description}''', )
 
 
-@bot.on.private_message(text='/top_f')
+@bot.on.private_message(text='/top_f')  # топ за все время хендлер
 async def top_f(message: Message):
     response = requests.get('http://igroman.herokuapp.com/api/v1/topForeverGames/')
     json_response = response.json()
@@ -136,13 +136,13 @@ async def top_f(message: Message):
     await message.reply("\n".join(top1), keyboard=keyboard)
 
 
-@bot.on.private_message(text='/game')
+@bot.on.private_message(text='/game')  # полная информация об игре хендлер
 async def games(message: Message):
     await bot.state_dispenser.set(message.peer_id, Game.TITLE)
     return "Введите название игры"
 
 
-@bot.on.private_message(state=Game.TITLE)
+@bot.on.private_message(state=Game.TITLE)  # поиска игры хендлер
 async def search(message: Message):
     response = requests.get(f'https://igroman.herokuapp.com/api/v1/searchGames/?search={message.text}', timeout=5)
     jsone_response = response.json()
@@ -165,7 +165,7 @@ async def search(message: Message):
         await message.reply("Извините, произошла ошибка. Мы не можем найти игру. Попробуйте написать от 5 символов ")
 
 
-@bot.on.private_message()
+@bot.on.private_message()  # хендлер исключение
 async def main(message):
     await message.reply(
         'Я не знаю, что ответить на это =(\n\nВозможно потом когда нибудь я смогу ответить тебе на это =)')
