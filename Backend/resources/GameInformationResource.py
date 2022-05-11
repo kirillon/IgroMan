@@ -6,6 +6,7 @@ from serializers import GamesSchema
 import requests
 
 
+# ресурс для передачи боту информации об игре
 class GameInformationResource(Resource):
 
     def get(self, app_id):
