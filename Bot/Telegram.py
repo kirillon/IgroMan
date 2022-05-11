@@ -112,8 +112,8 @@ async def search(message: types.Message, state: FSMContext):  # Функция �
 async def massage(message: types.Message):  # Функция вывода результата функции search
     if message.content_type == types.ContentType.TEXT:
         if "/id" in message.text:
-            id = int(message.text[3:])
-            res = requests.get(f"https://igroman.herokuapp.com/api/v1/getGames/{id}").json()
+            id_movie = int(message.text[3:])
+            res = requests.get(f"https://igroman.herokuapp.com/api/v1/getGames/{id_movie}").json()
             if res["success"]:
                 description = res["options"]["detailed_description"]
                 title = res["data"]["title"]
