@@ -5,6 +5,7 @@ from models import Game
 ma = Marshmallow()
 
 
+# создание сериалайзера
 class GamesSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Game
