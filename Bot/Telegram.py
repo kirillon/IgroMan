@@ -11,7 +11,6 @@ import requests
 
 import re
 
-
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -22,14 +21,14 @@ storage = MemoryStorage()
 dp = Dispatcher(bot=bot, storage=storage)
 
 
-class Games(StatesGroup): #Класс для ожидания ответа
+class Games(StatesGroup):  # Класс для ожидания ответа
     title = State()
 
 
 @dp.message_handler(commands=['start'])
-async def hello(message: types.Message): #Функция приветствия после команды /start
+async def hello(message: types.Message):  # Функция приветствия после команды /start
     keyboard = types.ReplyKeyboardMarkup()
-    button_1 = types.KeyboardButton(text="/help") #Создание кнопок
+    button_1 = types.KeyboardButton(text="/help")  # Создание кнопок
     keyboard.add(button_1)
     button_2 = "/top_2w"
     keyboard.add(button_2)
@@ -43,7 +42,7 @@ async def hello(message: types.Message): #Функция приветствия 
 
 
 @dp.message_handler(commands=['help'])
-async def help(message: types.Message): #Функция help
+async def help(message: types.Message):  # Функция help
     await message.reply(text='''Что я умею:
     /top_2w - перечислю лучшие игры за последние две недели
     /top_f - перечислю топ игр за всё время
@@ -51,22 +50,22 @@ async def help(message: types.Message): #Функция help
 
 
 @dp.message_handler(commands=['top_2w'])
-async def top_2w(message: types.Message): #Функция вывода топа за две недели
-    response = requests.get('https://igroman.herokuapp.com/api/v1/top2weeks') #Запрос на нашу API
+async def top_2w(message: types.Message):  # Функция вывода топа за две недели
+    response = requests.get('https://igroman.herokuapp.com/api/v1/top2weeks')  # Запрос на нашу API
     jsone_response = response.json()
     top = list()
     top1 = list()
-    for i in range(len(jsone_response['data'])): #Сортировка
+    for i in range(len(jsone_response['data'])):  # Сортировка
         top.append([jsone_response['data'][i]['title'],
                     str(int(jsone_response['data'][i]["price"]) / 100)
                     + "$", f" /id{jsone_response['data'][i]['steam_id']}"])
         top1.append(",".join(top[i]))
         top1[i] = f"{i + 1}. " + top1[i]
-    await message.reply(text="\n".join(top1), reply=False) #Вывод
+    await message.reply(text="\n".join(top1), reply=False)  # Вывод
 
 
 @dp.message_handler(commands=['top_f'])
-async def top_f(message: types.Message): #Функция топа за всё время(тоже самое, что и top_2w)
+async def top_f(message: types.Message):  # Функция топа за всё время(тоже самое, что и top_2w)
     response = requests.get('http://igroman.herokuapp.com/api/v1/topForeverGames/')
     jsone_response = response.json()
     top = list()
@@ -80,20 +79,21 @@ async def top_f(message: types.Message): #Функция топа за всё в
     await message.reply(text="\n".join(top1), reply=False)
 
 
-@dp.message_handler(commands=['game']) 
-async def game(message: types.Message): #Функция описания игры по названию
+@dp.message_handler(commands=['game'])
+async def game(message: types.Message):  # Функция описания игры по названию
     await message.reply(text="Введите название игры")
     await Games.title.set()
 
 
 @dp.message_handler(state=Games.title)
-async def search(message: types.Message, state: FSMContext): #Функция рефлизующая /game
+async def search(message: types.Message, state: FSMContext):  # Функция рефлизующая /game
     async with state.proxy() as data:
         data['name'] = message.text
-    response = requests.get(f'https://igroman.herokuapp.com/api/v1/searchGames/?search={message.text}', timeout=5) #Запрос
+    response = requests.get(f'https://igroman.herokuapp.com/api/v1/searchGames/?search={message.text}',
+                            timeout=5)  # Запрос
     json_response = response.json()
 
-    top = list() #Сортировка
+    top = list()  # Сортировка
     top1 = list()
     for i in range(len(json_response['data'])):
         top.append([json_response['data'][i]['title'],
@@ -103,12 +103,13 @@ async def search(message: types.Message, state: FSMContext): #Функция р�
         top1.append(",".join(top[i]))
         top1[i] = f"{i + 1}. " + top1[i]
 
-    await message.reply(f"Найдено {len(json_response['data'])} результатов запроса\n" + "\n".join(top1)) #Вызов функции massage
-    await state.finish() #Прекращение ожидания
+    await message.reply(
+        f"Найдено {len(json_response['data'])} результатов запроса\n" + "\n".join(top1))  # Вызов функции massage
+    await state.finish()  # Прекращение ожидания
 
 
 @dp.message_handler(content_types=types.ContentType.ANY)
-async def massage(message: types.Message): #Функция вывода результата функции search
+async def massage(message: types.Message):  # Функция вывода результата функции search
     if message.content_type == types.ContentType.TEXT:
         if "/id" in message.text:
             id = int(message.text[3:])
@@ -143,4 +144,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
