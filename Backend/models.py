@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
 
+# модель базы данных
 class Game(db.Model):
     __tablename__ = 'games'
     id = db.Column("id", db.Integer, primary_key=True)
