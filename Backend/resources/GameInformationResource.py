@@ -1,9 +1,7 @@
-from flask import jsonify
-
-from models import Game
-from flask_restful import Resource
-from serializers import GamesSchema
 import requests
+from flask_restful import Resource
+from models import Game
+from serializers import GamesSchema
 
 
 # ресурс для передачи боту информации об игре
